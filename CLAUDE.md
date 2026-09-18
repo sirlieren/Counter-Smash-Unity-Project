@@ -92,12 +92,33 @@ seed-tabanlı** — bkz. `PROCEDURAL_GENERATION.md`), 1-3 yıldız.
 
 ## Nerede kaldık
 
-Atış mekanizması çalışıyor: `Assets/Scripts/BallLauncher.cs` (dokun/basılı-tut/bırak, güç
-çemberi, nişan → uzak düzleme yansıtma, cooldown) ve `Assets/Scripts/BallProjectile.cs`
-(ayarlanabilir `gravityScale` ile hafif düşüş — top prefabına eklenmesi lazım) yazıldı ve test
-edildi. Çözülen önemli bug'lar: kamera ile spawn point'in aynı noktada olması (depth=0 hatası),
-nişan hedefinin topun kendi derinliğine değil tuğla yapılarının derinliğine (`aimPlaneDistance`)
-yansıtılması gerekliliği, çemberlerin topun derinliğinde (önde) kalması gerekliliği.
+**Gün 1-2 tamamlandı.** Atış mekanizması çalışıyor: `Assets/Scripts/BallLauncher.cs`
+(dokun/basılı-tut/bırak, güç çemberi, nişan → uzak düzleme yansıtma, cooldown, mermi sayacı) ve
+`Assets/Scripts/BallProjectile.cs` (ayarlanabilir `gravityScale`). Çözülen önemli bug'lar: kamera
+ile spawn point'in aynı noktada olması (depth=0 hatası), nişan hedefinin topun kendi derinliğine
+değil tuğla yapılarının derinliğine (`aimPlaneDistance`) yansıtılması gerekliliği, çemberlerin
+topun derinliğinde (önde) kalması gerekliliği.
 
-**Sıradaki:** Eren Lego tuğlalarına Rigidbody/Collider değerlerini atıyor. Sonra: Gün 2 —
-tüm tuğla tiplerinde fizik/materyal ayarı, "temizlendi" kontrolü, mermi sayacı.
+24 Lego tuğla prefabı (2X2/2x4/2x6/2x8 × 6 renk) Rigidbody + BoxCollider + Physic Material (Eren
+elle ayarladı: static/dynamic friction farklı, bounciness düşük) ile hazır, hepsinde
+`ClearableBrick.cs` var (hayalet trigger hacmine — `KillZone.cs` — düşünce `MarkCleared()`
+tetikleniyor, `destroyAfterClear` bool'u açıkken obje yok ediliyor, varsayılan açık). Hayalet
+trigger hacmi sahnede henüz Eren tarafından kurulmadıysa kurulması lazım (boş GameObject + trigger
+BoxCollider + `KillZone.cs`, tablanın altına, kamerenin görmediği bir yere).
+
+`BallLauncher`'da mermi sayacı var (`startingAmmo`, ammo bitince top gelmiyor,
+`OnAmmoChanged`/`OnAmmoDepleted` static event'leri dışarı açık). `Assets/Scripts/AmmoHud.cs`
+yazıldı (mermi değişince ikon otomatik üretip/söndürüyor) — sahnede Canvas + ikon prefab kurulumu
+Eren'e kalmıştı, tamamlandığı teyit edilmedi, kontrol edilmeli.
+
+**Gün 3 (procedural level generation) başladı, çalışan bir ilk versiyon var.** Nihai tasarım
+`PROCEDURAL_GENERATION.md`'deki ilk taslaktan (ScriptableObject modül kütüphanesi, tam sayıya
+ulaşan bütçe, `Physics.Simulate` ile kararlılık kontrolü) önemli ölçüde saptı — kararlılık kontrolü
+ve seed havuzu aracı henüz YAPILMADI, o kısım hâlâ gelecek iş. Şu an var olanlar:
+- `Assets/Scripts/SeededRandom.cs` — `System.Random` sarmalayıcı, `DeriveSeed(masterSeed, subsystem)` ile alt-seed türetiyor.
+- `Assets/Scripts/ModuleWidth.cs` — bir **modülün** (3-4 tuğladan Eren'in elle oluşturduğu birleşik prefab, tek tuğla DEĞİL) genişliğini (stud cinsinden, içindeki en geniş tekil tuğlaya göre) ve seçim ağırlığını taşıyan küçük bir bileşen. Ham tuğla prefablarına eklenmemeli — sadece Eren'in oluşturacağı birleşik modül prefablarının kök objesine.
+- `Assets/Scripts/LevelGenerator.cs` — bütçe artık tam sayı değil, esnek aralık (varsayılan 16-24 stud); soldan sağa, kalan bütçeye sığan modüller arasından ağırlıklı rastgele seçip diziyor, sığmayan kalmayınca duruyor (reroll yok). 1 stud = 0.2385 dünya birimi (Eren'in sahnede 3× 2x8 tuğlayı yan yana koyup ekran genişliğine tam oturttuğu testiyle doğrulandı). Üretilen sıra `originPoint`'in X'inde ortalanıyor.
+
+**Sıradaki:** Eren birkaç tane 3-4 parçalık modül prefabı oluşturup `ModuleWidth` ekleyecek,
+`LevelGenerator`'ın `Module Prefabs` listesine koyup test edecek. Sonrasında: kararlılık kontrolü
+(`Physics.Simulate` ile deplasman ölçümü) ve onaylı seed havuzu aracı henüz yazılmadı.

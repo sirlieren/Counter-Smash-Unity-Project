@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -9144374206653212858}
   - component: {fileID: -1291816012902237310}
   - component: {fileID: 4945108728338649830}
+  - component: {fileID: 5245743338513076242}
   m_Layer: 0
   m_Name: 2x4BlockWhite
   m_TagString: Untagged
@@ -139,8 +140,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.954, y: 0.34199998, z: 0.47399998}
-  m_Center: {x: 0.000000014901161, y: 0.17099999, z: 0}
+  m_Size: {x: 0.954, y: 0.28937763, z: 0.47399998}
+  m_Center: {x: 0, y: 0.14468881, z: 0}
 --- !u!114 &4945108728338649830
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,3 +155,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroyAfterClear: 1
+--- !u!114 &5245743338513076242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1930434831689950441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 078750199c76c724bb89d08ccefff07c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomBrickMaterial
+  materials:
+  - {fileID: 2100000, guid: e2fc207c3ddfb5f4da9987193eb5619f, type: 2}
+  - {fileID: 2100000, guid: 7fce34f32a9299e468d9e5fa408bdf59, type: 2}
+  - {fileID: 2100000, guid: 0f0fca973bcebfb47b299a91e5fce557, type: 2}
+  - {fileID: 2100000, guid: 36876538503a9d9409aad9d57525eed9, type: 2}
+  - {fileID: 2100000, guid: 36f097ae9ea41e54991e812b47c86d5f, type: 2}
+  - {fileID: 2100000, guid: 85afe52ee52fceb46b5d664759b6e231, type: 2}
+  targetRenderer: {fileID: 7170964089230209876}

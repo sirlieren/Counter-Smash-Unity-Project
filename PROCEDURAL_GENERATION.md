@@ -1,5 +1,14 @@
 # Procedural Level Generation — Araştırma Raporu
 
+> **Güncelleme:** Aşağıdaki plan ilk araştırma taslağı — uygulama sırasında Eren'le konuşa konuşa
+> netleşen gerçek tasarım bundan bazı yerlerde saptı. Kod tarafında ne var/ne farklı, güncel özet
+> için `CLAUDE.md`'deki "Nerede kaldık" bölümüne bak; çakışırsa CLAUDE.md güncel olan taraf.
+> Özetle: modüller ScriptableObject değil, Eren'in elle bir araya getirdiği 3-4 tuğlalık prefablar
+> + üstlerinde basit bir `ModuleWidth` bileşeni; bütçe tam sayıya ulaşmak zorunda değil, esnek bir
+> min-max aralığı (varsayılan 16-24 stud); anchor/"alan" GameObject'leri fikri denendi ama terk
+> edildi, üretim düz/formül bazlı. Kararlılık kontrolü (adım 4) ve seed havuzu aracı (adım 6)
+> henüz yazılmadı, plan hâlâ geçerli — sadece modül/yerleşim kısmı (adım 1-3) değişti.
+>
 > Bailey'in önerdiği 5 adımlı yaklaşım (modül kütüphanesi → yerleşim kuralı → parametre
 > randomizasyonu → kararlılık kontrolü → seed) akademik/endüstri pratiğiyle birebir örtüşüyor —
 > bu Angry Birds tarzı fizik-yıkım oyunlarında kanıtlanmış standart yöntem. Aşağıda her adım için
