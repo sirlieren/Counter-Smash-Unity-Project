@@ -3952,6 +3952,9 @@ MonoBehaviour:
   iconContainer: {fileID: 983717844}
   ammoIconPrefab: {fileID: 8474013019942378226, guid: 5d9031637d74b4d43ba0c1a553fa62de, type: 3}
   popDuration: 0.15
+  consumePunchScale: 1.15
+  appearDuration: 0.2
+  appearStagger: 0.04
 --- !u!114 &630370511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4123,6 +4126,63 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.007500076, y: 0.0079623405, z: 0.012080343}
   m_Center: {x: 0.00000019079386, y: 0.000231171, z: 0.006040263}
+--- !u!1001 &647009528
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6.72
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -5.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 385550194052960445, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5497712919397908864, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
+      propertyPath: m_Name
+      value: 2x8BlockYellow
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 56dbaea67cf507c488fb1d53584ae53d, type: 3}
 --- !u!4 &649830261 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6373284533543457230, guid: b121818f9f0148c44b7b3e040605b70b, type: 3}
@@ -6158,6 +6218,8 @@ MonoBehaviour:
   maxCircleScale: 2.5
   minShotSpeed: 4
   maxShotSpeed: 14
+  minSpinSpeed: 90
+  maxSpinSpeed: 360
   aimPlaneDistance: 8
   requireMinimumHoldTime: 0
   minimumHoldTime: 0.05
@@ -13091,3 +13153,4 @@ SceneRoots:
   - {fileID: 2144369816}
   - {fileID: 1098205304}
   - {fileID: 1372249045}
+  - {fileID: 647009528}

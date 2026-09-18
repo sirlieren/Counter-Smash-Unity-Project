@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AmmoHud : MonoBehaviour
 {
@@ -12,8 +13,15 @@ public class AmmoHud : MonoBehaviour
     [Header("Juice")]
     [Tooltip("Bir mermi harcandığında ikonun küçülüp kaybolma süresi.")]
     [SerializeField] private float popDuration = 0.15f;
+    [Tooltip("Mermi harcanınca çerçevenin yaptığı küçük sıçrama büyüklüğü (1 = sıçramasız).")]
+    [SerializeField] private float consumePunchScale = 1.15f;
+    [Tooltip("Seviye başında ikonların tek tek belirme süresi.")]
+    [SerializeField] private float appearDuration = 0.2f;
+    [Tooltip("İkonlar arasındaki belirme gecikmesi — kademeli/cascade bir açılış için.")]
+    [SerializeField] private float appearStagger = 0.04f;
 
     private readonly List<GameObject> icons = new List<GameObject>();
+    private int nextIconToConsume;
     private bool initialized;
 
     private void OnEnable()
@@ -36,7 +44,7 @@ public class AmmoHud : MonoBehaviour
         }
         else
         {
-            RemoveOneIcon();
+            ConsumeOneIcon();
         }
     }
 
@@ -47,33 +55,73 @@ public class AmmoHud : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            icons.Add(Instantiate(ammoIconPrefab, iconContainer));
+            GameObject icon = Instantiate(ammoIconPrefab, iconContainer);
+            icon.transform.localScale = Vector3.zero;
+            icons.Add(icon);
+            StartCoroutine(AppearAnimation(icon.transform, i * appearStagger));
         }
+
+        nextIconToConsume = icons.Count - 1;
     }
 
-    private void RemoveOneIcon()
+    private void ConsumeOneIcon()
     {
-        if (icons.Count == 0) return;
+        if (nextIconToConsume < 0) return;
 
-        int lastIndex = icons.Count - 1;
-        GameObject icon = icons[lastIndex];
-        icons.RemoveAt(lastIndex);
-        StartCoroutine(PopAndDestroy(icon));
+        GameObject icon = icons[nextIconToConsume];
+        nextIconToConsume--;
+
+        // BallTab çerçevesinin tek çocuğu top ikonu — mermi harcanınca çerçeve kalır, sadece bu gizlenir.
+        Transform ballIcon = icon.transform.GetChild(0);
+        StartCoroutine(ConsumeAnimation(icon.transform, ballIcon));
     }
 
-    private IEnumerator PopAndDestroy(GameObject icon)
+    private IEnumerator AppearAnimation(Transform iconTransform, float delay)
     {
-        Transform iconTransform = icon.transform;
-        Vector3 startScale = iconTransform.localScale;
+        if (delay > 0f) yield return new WaitForSeconds(delay);
+
         float elapsed = 0f;
-
-        while (elapsed < popDuration)
+        while (elapsed < appearDuration)
         {
             elapsed += Time.deltaTime;
-            iconTransform.localScale = Vector3.Lerp(startScale, Vector3.zero, elapsed / popDuration);
+            iconTransform.localScale = Vector3.one * EaseOutBack(elapsed / appearDuration);
             yield return null;
         }
 
-        Destroy(icon);
+        iconTransform.localScale = Vector3.one;
+    }
+
+    private IEnumerator ConsumeAnimation(Transform frame, Transform ballIcon)
+    {
+        Image ballImage = ballIcon.GetComponent<Image>();
+        Color startColor = ballImage != null ? ballImage.color : Color.white;
+        Vector3 ballStartScale = ballIcon.localScale;
+        Vector3 frameBaseScale = frame.localScale;
+
+        float elapsed = 0f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / popDuration;
+
+            ballIcon.localScale = Vector3.Lerp(ballStartScale, Vector3.zero, t);
+            if (ballImage != null) ballImage.color = Color.Lerp(startColor, new Color(startColor.r, startColor.g, startColor.b, 0f), t);
+
+            float punch = 1f + (consumePunchScale - 1f) * Mathf.Sin(t * Mathf.PI);
+            frame.localScale = frameBaseScale * punch;
+
+            yield return null;
+        }
+
+        ballIcon.gameObject.SetActive(false);
+        frame.localScale = frameBaseScale;
+    }
+
+    private static float EaseOutBack(float t)
+    {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1f;
+        t = Mathf.Clamp01(t);
+        return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
     }
 }

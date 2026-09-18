@@ -20,6 +20,11 @@ public class BallLauncher : MonoBehaviour
     [SerializeField] private float minShotSpeed = 4f;
     [SerializeField] private float maxShotSpeed = 14f;
 
+    [Header("Fırlatma sallanması")]
+    [Tooltip("Topun fırlatılırken etrafında döneceği açısal hız aralığı (derece/saniye) — gerçek bir cismin elden çıkarken düzensiz dönmesi hissi için. Ekseni her atışta rastgele.")]
+    [SerializeField] private float minSpinSpeed = 90f;
+    [SerializeField] private float maxSpinSpeed = 360f;
+
     [Header("Nişan düzlemi")]
     [Tooltip("Kameradan, tuğla yapılarının bulunduğu derinliğe olan mesafe. Topun kendi derinliği DEĞİL.")]
     [SerializeField] private float aimPlaneDistance = 10f;
@@ -123,8 +128,11 @@ public class BallLauncher : MonoBehaviour
 
             Debug.Log($"[BallLauncher] screenPos={releaseScreenPos}, screenSize=({Screen.width},{Screen.height}), camPos={aimCamera.transform.position}, camRot={aimCamera.transform.eulerAngles}, targetPoint={targetPoint}, spawn={spawnPoint.position}, direction={direction}");
 
+            float spinSpeed = Mathf.Lerp(minSpinSpeed, maxSpinSpeed, chargeValue) * Mathf.Deg2Rad;
+
             currentBall.isKinematic = false;
             currentBall.linearVelocity = direction * speed;
+            currentBall.angularVelocity = Random.onUnitSphere * spinSpeed;
             currentBall = null;
 
             remainingAmmo--;
