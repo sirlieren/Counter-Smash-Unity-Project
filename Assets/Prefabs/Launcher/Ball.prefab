@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6727728327727586616}
   - component: {fileID: 7646871553148793088}
   - component: {fileID: 2158319462202030369}
+  - component: {fileID: 8472910384720194756}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -155,6 +156,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BallProjectile
   gravityScale: 0.6
+--- !u!114 &8472910384720194756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4349667196492605495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d79130925190ef4a986e01fb9caabaf, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::BrickImpactSound
+  impactClips: []
+  minImpactSpeed: 0.4
+  maxImpactSpeed: 8
+  minVolume: 0.15
+  retriggerCooldown: 0.08
 --- !u!1 &6003160457075970573
 GameObject:
   m_ObjectHideFlags: 0

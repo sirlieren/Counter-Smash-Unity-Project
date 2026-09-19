@@ -39,6 +39,10 @@ public class BallLauncher : MonoBehaviour
     [Header("Mermi")]
     [SerializeField] private int startingAmmo = 3;
 
+    [Header("Ses")]
+    [SerializeField] private AudioClip[] launchClips;
+    [SerializeField] private float launchVolume = 0.9f;
+
     private Rigidbody currentBall;
     private bool isCharging;
     private float chargeValue;
@@ -133,6 +137,12 @@ public class BallLauncher : MonoBehaviour
             currentBall.isKinematic = false;
             currentBall.linearVelocity = direction * speed;
             currentBall.angularVelocity = Random.onUnitSphere * spinSpeed;
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOneShot(AudioManager.PickRandom(launchClips), spawnPoint.position, launchVolume);
+            }
+
             currentBall = null;
 
             remainingAmmo--;

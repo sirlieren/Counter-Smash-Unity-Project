@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -5659589634473603657}
   - component: {fileID: 3032648695101109431}
   - component: {fileID: 456647255316855242}
+  - component: {fileID: 8671609670820191545}
   m_Layer: 0
   m_Name: 2x8BlockWhite
   m_TagString: Untagged
@@ -155,6 +156,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destroyAfterClear: 0
+  clearClips: []
+  clearVolume: 0.6
 --- !u!114 &456647255316855242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,3 +178,29 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 36f097ae9ea41e54991e812b47c86d5f, type: 2}
   - {fileID: 2100000, guid: 85afe52ee52fceb46b5d664759b6e231, type: 2}
   targetRenderer: {fileID: 4845798231920506787}
+--- !u!114 &8671609670820191545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5988008205616269641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d79130925190ef4a986e01fb9caabaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BrickImpactSound
+  impactClips:
+  - {fileID: 8300000, guid: 93fda2b8e0928984080ddc1a2a311507, type: 3}
+  - {fileID: 8300000, guid: 9ef642482b5ab4745993880532e71afe, type: 3}
+  - {fileID: 8300000, guid: 0c3b9570cdf81ae42ad4bdfcb633f2ee, type: 3}
+  - {fileID: 8300000, guid: bb2c7673e349ef145b23c6fb1dd24c39, type: 3}
+  - {fileID: 8300000, guid: 68863b4b51b8361418845da34a477678, type: 3}
+  - {fileID: 8300000, guid: 0de126d6ef0cd934cb852d7f510d60b4, type: 3}
+  - {fileID: 8300000, guid: ca85abebf99c51749907f76559b44dc7, type: 3}
+  - {fileID: 8300000, guid: c442e72db704d414fb81da513766dbba, type: 3}
+  - {fileID: 8300000, guid: 0f3bffd556b463148a4bd20a86d515bd, type: 3}
+  minImpactSpeed: 0.4
+  maxImpactSpeed: 8
+  minVolume: 0.15
+  retriggerCooldown: 0.08
