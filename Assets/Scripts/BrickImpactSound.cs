@@ -3,6 +3,21 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class BrickImpactSound : MonoBehaviour
 {
+    /// <summary>
+    /// Eşiği geçen her çarpışmada tetiklenir: (temas noktası, 0-1 arası şiddet, çarpan tuğla).
+    /// Bu, sesin volume'undan farklı — sesin duyulabilirlik için bir tabanı (minVolume) var,
+    /// bu şiddet ise eşikte tam 0'dan başlar; sarsıntı/hit-stop gibi tüketiciler ufak
+    /// çarpışmalarda gerçekten neredeyse sıfır tepki istiyor.
+    /// </summary>
+    public static event System.Action<Vector3, float, BrickImpactSound> OnImpact;
+
+    /// <summary>
+    /// Bu tuğla kamera sarsıntısını kaç kez tetikledi. Tüketici (CameraShake) sayar; sayaç
+    /// tuğlanın üzerinde durduğu için tuğla yok olunca kendiliğinden gider.
+    /// </summary>
+    public int ShakeHitCount { get; set; }
+
+
     [Header("Çarpışma sesleri")]
     [Tooltip("Rastgele seçilir — tekrarlanan tek bir sesin monoton durmaması için birkaç varyasyon iste.")]
     [SerializeField] private AudioClip[] impactClips;
@@ -28,13 +43,17 @@ public class BrickImpactSound : MonoBehaviour
         if (Time.time - lastPlayTime < retriggerCooldown) return;
         if (impactSpeed < minImpactSpeed) return;
 
-        float volume = Mathf.Lerp(minVolume, 1f, Mathf.InverseLerp(minImpactSpeed, maxImpactSpeed, impactSpeed));
+        float normalizedIntensity = Mathf.InverseLerp(minImpactSpeed, maxImpactSpeed, impactSpeed);
+        float volume = Mathf.Lerp(minVolume, 1f, normalizedIntensity);
+        Vector3 contactPoint = collision.GetContact(0).point;
 
         if (AudioManager.Instance != null)
         {
             AudioClip clip = AudioManager.PickRandom(impactClips);
-            AudioManager.Instance.PlayOneShot(clip, collision.GetContact(0).point, volume);
+            AudioManager.Instance.PlayOneShot(clip, contactPoint, volume);
         }
+
+        OnImpact?.Invoke(contactPoint, normalizedIntensity, this);
 
         lastPlayTime = Time.time;
     }

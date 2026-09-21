@@ -15,6 +15,8 @@ public class BallLauncher : MonoBehaviour
     [SerializeField] private float chargeCycleDuration = 1.2f;
     [SerializeField] private float minCircleScale = 0.15f;
     [SerializeField] private float maxCircleScale = 1f;
+    [Tooltip("Güç eğrisinin eğimi. 1 = doğrusal (eskisi gibi). Büyüdükçe çember başta hızlı dolar, maksimuma yakın değerlerde daha uzun kalır — zayıf atış yapmak zorlaşır.")]
+    [SerializeField, Range(1f, 4f)] private float chargeCurvePower = 1.8f;
 
     [Header("Atış gücü")]
     [SerializeField] private float minShotSpeed = 4f;
@@ -43,9 +45,19 @@ public class BallLauncher : MonoBehaviour
     [SerializeField] private AudioClip[] launchClips;
     [SerializeField] private float launchVolume = 0.9f;
 
+    [Header("Perfect atış")]
+    [Tooltip("Güç değeri (0-1, eğriden geçmiş hâli) bu eşiğe ulaşınca atış 'perfect' sayılır.")]
+    [SerializeField, Range(0.5f, 1f)] private float perfectThreshold = 0.98f;
+    [Tooltip("Perfect atışta topun hızı normal hesaplanan hızın kaç katı olsun (1.25 = %25 daha hızlı).")]
+    [SerializeField] private float perfectSpeedMultiplier = 1.25f;
+    [Tooltip("Normal fırlatma sesine EK olarak, perfect atışta üst üste çalınan ikinci ses.")]
+    [SerializeField] private AudioClip[] perfectLaunchClips;
+    [SerializeField] private float perfectLaunchVolume = 0.9f;
+
     private Rigidbody currentBall;
     private bool isCharging;
     private float chargeValue;
+    private float chargeProgress;
     private float pressStartTime;
     private float cooldownTimer;
     private int remainingAmmo;
@@ -53,6 +65,10 @@ public class BallLauncher : MonoBehaviour
     public int RemainingAmmo => remainingAmmo;
     public static event System.Action<int> OnAmmoChanged;
     public static event System.Action OnAmmoDepleted;
+    /// <summary>Basılı tutarken her karede güncel 0-1 güç değeriyle, atış/bırakma anında 0 ile tetiklenir.</summary>
+    public static event System.Action<float> OnChargeChanged;
+    /// <summary>Perfect bir atış çıktığı anda tetiklenir (sarsıntı gibi tüketiciler için).</summary>
+    public static event System.Action OnPerfectShot;
 
     private void Start()
     {
@@ -99,6 +115,7 @@ public class BallLauncher : MonoBehaviour
     private void StartCharging()
     {
         isCharging = true;
+        chargeProgress = 0f;
         chargeValue = 0f;
         pressStartTime = Time.time;
         ShowChargeVisual();
@@ -108,15 +125,20 @@ public class BallLauncher : MonoBehaviour
     private void AdvanceCharge()
     {
         // Testere dişi döngü: sınıra ulaşınca sıçrayarak sıfırlanır, sürüklemeden bağımsız.
-        chargeValue += Time.deltaTime / chargeCycleDuration;
-        if (chargeValue >= 1f) chargeValue -= 1f;
+        // chargeProgress zamanla doğrusal ilerler; chargeValue (çember + atış gücü) onun ease-out
+        // eğrisi: başta hızlı yükselir, sona doğru yavaşlayıp maksimuma yakın daha uzun kalır.
+        chargeProgress += Time.deltaTime / chargeCycleDuration;
+        if (chargeProgress >= 1f) chargeProgress -= 1f;
+        chargeValue = 1f - Mathf.Pow(1f - chargeProgress, chargeCurvePower);
         UpdateChargeVisual();
+        OnChargeChanged?.Invoke(chargeValue);
     }
 
     private void FireBall(Vector2 releaseScreenPos)
     {
         isCharging = false;
         HideChargeVisual();
+        OnChargeChanged?.Invoke(0f);
 
         float holdDuration = Time.time - pressStartTime;
         bool validShot = !requireMinimumHoldTime || holdDuration >= minimumHoldTime;
@@ -129,6 +151,8 @@ public class BallLauncher : MonoBehaviour
             direction.Normalize();
 
             float speed = Mathf.Lerp(minShotSpeed, maxShotSpeed, chargeValue);
+            bool isPerfect = chargeValue >= perfectThreshold;
+            if (isPerfect) speed *= perfectSpeedMultiplier;
 
             Debug.Log($"[BallLauncher] screenPos={releaseScreenPos}, screenSize=({Screen.width},{Screen.height}), camPos={aimCamera.transform.position}, camRot={aimCamera.transform.eulerAngles}, targetPoint={targetPoint}, spawn={spawnPoint.position}, direction={direction}");
 
@@ -141,6 +165,19 @@ public class BallLauncher : MonoBehaviour
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.PlayOneShot(AudioManager.PickRandom(launchClips), spawnPoint.position, launchVolume);
+                if (isPerfect)
+                {
+                    AudioManager.Instance.PlayOneShot(AudioManager.PickRandom(perfectLaunchClips), spawnPoint.position, perfectLaunchVolume);
+                }
+            }
+
+            if (isPerfect)
+            {
+                PerfectBallSkin skin = currentBall.GetComponent<PerfectBallSkin>();
+                if (skin != null) skin.Activate();
+                PerfectBallExplosion explosion = currentBall.GetComponent<PerfectBallExplosion>();
+                if (explosion != null) explosion.Activate();
+                OnPerfectShot?.Invoke();
             }
 
             currentBall = null;
@@ -151,6 +188,18 @@ public class BallLauncher : MonoBehaviour
         }
 
         cooldownTimer = shotCooldown;
+    }
+
+    /// <summary>
+    /// Seviye bittiğinde çağrılır: devam eden basılı tutmayı iptal eder, çemberleri gizler ve
+    /// bu bileşeni kapatır — bitiş ekranı açıkken yeni atış çıkmasın.
+    /// </summary>
+    public void DisableInput()
+    {
+        isCharging = false;
+        HideChargeVisual();
+        OnChargeChanged?.Invoke(0f);
+        enabled = false;
     }
 
     private Vector3 ScreenPointToAimPlane(Vector2 screenPos)

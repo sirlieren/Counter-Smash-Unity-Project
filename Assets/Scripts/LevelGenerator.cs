@@ -22,11 +22,14 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private int seed = 12345;
     [SerializeField] private bool generateOnStart = true;
 
+    /// <summary>Seviye üretilip yerleştirildikten sonra tetiklenir.</summary>
+    public static event System.Action OnLevelGenerated;
+
     private readonly List<GameObject> spawned = new List<GameObject>();
 
     private void Start()
     {
-        if (generateOnStart) Generate(seed);
+        if (generateOnStart) Generate(LevelSession.SeedFor(seed));
     }
 
     public void Generate(int levelSeed)
@@ -56,6 +59,7 @@ public class LevelGenerator : MonoBehaviour
         }
 
         PlaceRow(chosen, usedWidth);
+        OnLevelGenerated?.Invoke();
     }
 
     private List<ModuleWidth> GetCandidates(int remaining)

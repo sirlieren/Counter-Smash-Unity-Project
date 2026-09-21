@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 7646871553148793088}
   - component: {fileID: 2158319462202030369}
   - component: {fileID: 8472910384720194756}
+  - component: {fileID: 7814861766244251359}
+  - component: {fileID: 6429124016258240890}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -166,13 +168,60 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d79130925190ef4a986e01fb9caabaf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BrickImpactSound
-  impactClips: []
+  impactClips:
+  - {fileID: 8300000, guid: 9e8fb86d6d2358546822ead27c4575ea, type: 3}
+  - {fileID: 8300000, guid: 73edc9a2943b6474281066f55575833f, type: 3}
+  - {fileID: 8300000, guid: 55a5792969882c0429a57aaa96413461, type: 3}
+  - {fileID: 8300000, guid: 5edec741ed734e247a57961e724e987e, type: 3}
+  - {fileID: 8300000, guid: 25bb36a932ce9ec4ebad0a2ab2a0a4fa, type: 3}
+  - {fileID: 8300000, guid: 1de9952b37ebc9a4a920c7dca913905a, type: 3}
+  - {fileID: 8300000, guid: 05e926e7a9c5ef44387fcffc4c0f81fc, type: 3}
   minImpactSpeed: 0.4
   maxImpactSpeed: 8
   minVolume: 0.15
   retriggerCooldown: 0.08
+--- !u!114 &7814861766244251359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4349667196492605495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f5786fd730d734db61c419d99d060f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PerfectBallSkin
+  targets:
+  - {fileID: 5210522730457265112}
+  cyclesPerSecond: 1.5
+  saturation: 0.8
+  emissionIntensity: 2
+--- !u!114 &6429124016258240890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4349667196492605495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f3097bea1154447b4b349c87616708, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PerfectBallExplosion
+  radius: 1.5
+  force: 6
+  upwardsModifier: 0.5
+  explosionEffectPrefab: {fileID: 0}
+  explosionClips:
+  - {fileID: 8300000, guid: 7bf84bb05a3a7e3439c20d82d132faaf, type: 3}
+  - {fileID: 8300000, guid: 3f462153fd5b3b64b9322ca8400f8b3b, type: 3}
+  - {fileID: 8300000, guid: a0d994831a5a38241adadfddb9aee8fd, type: 3}
+  - {fileID: 8300000, guid: bc57695e4b65bc844a34ae01014d1f4b, type: 3}
+  - {fileID: 8300000, guid: a4915417d9e7f2744babcabad932d815, type: 3}
+  explosionVolume: 0.9
 --- !u!1 &6003160457075970573
 GameObject:
   m_ObjectHideFlags: 0
