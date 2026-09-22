@@ -2695,6 +2695,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
   launcher: {fileID: 995376687}
+  tableSurface: {fileID: 2340118818440475189}
+  edgeMargin: 0.15
+  dropDistance: 0.25
   threeStarMaxShots: 1
   twoStarMaxShots: 2
   endScreenDelay: 0.8

@@ -15,6 +15,14 @@ public class LevelManager : MonoBehaviour
     [Header("Referanslar")]
     [Tooltip("Boş bırakılırsa sahnede otomatik aranır.")]
     [SerializeField] private BallLauncher launcher;
+    [Tooltip("Oyunun oynandığı masanın collider'ı. Sınırları dışına çıkan parçalar temizlenir.")]
+    [SerializeField] private Collider tableSurface;
+
+    [Header("Masa sınırı")]
+    [Tooltip("Parça merkezinin masa kenarını geçmesine izin verilen küçük pay.")]
+    [SerializeField] private float edgeMargin = 0.15f;
+    [Tooltip("Parça merkezi masa üstünden bu kadar aşağıdaysa temizlenir.")]
+    [SerializeField] private float dropDistance = 0.25f;
 
     [Header("Yıldız kuralı (harcanan mermiye göre)")]
     [Tooltip("Bu kadar veya daha az mermiyle kazanılırsa 3 yıldız.")]
@@ -47,6 +55,8 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         if (launcher == null) launcher = FindFirstObjectByType<BallLauncher>();
+        if (tableSurface == null)
+            Debug.LogWarning("[LevelManager] Table Surface atanmamış; masa dışına çıkan parçalar otomatik temizlenemez.", this);
     }
 
     private void OnEnable()
@@ -100,6 +110,8 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
+        if (state == State.Playing || state == State.Settling) ClearOutsideTable();
+
         switch (state)
         {
             case State.Playing:
@@ -140,7 +152,22 @@ public class LevelManager : MonoBehaviour
     private IEnumerator EndRoutine(bool won, int stars)
     {
         yield return new WaitForSecondsRealtime(endScreenDelay);
+        if (!won)
+        {
+            ClearOutsideTable();
+            if (ClearableBrick.CountRemaining() == 0)
+            {
+                won = true;
+                stars = ComputeStars();
+            }
+        }
         OnLevelEnded?.Invoke(won, stars);
+    }
+
+    private void ClearOutsideTable()
+    {
+        if (tableSurface == null || !tableSurface.enabled || !tableSurface.gameObject.activeInHierarchy) return;
+        ClearableBrick.ClearOutsidePlayArea(tableSurface.bounds, edgeMargin, dropDistance);
     }
 
     private int ComputeStars()

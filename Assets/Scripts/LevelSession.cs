@@ -7,11 +7,14 @@ using UnityEngine.SceneManagement;
 public static class LevelSession
 {
     public const int LevelCount = 20;
+    private const string UnlockedLevelCountKey = "ToyRoomSmash.UnlockedLevelCount";
     private const string BestStarsKeyPrefix = "ToyRoomSmash.BestStars.";
 
     /// <summary>0 tabanlı seviye numarası.</summary>
     public static int LevelIndex { get; private set; }
     public static bool IsLastLevel => LevelIndex >= LevelCount - 1;
+    /// <summary>Oyuncunun erişebildiği seviye sayısı. İlk açılışta yalnızca seviye 1 açıktır.</summary>
+    public static int UnlockedLevelCount => Mathf.Clamp(PlayerPrefs.GetInt(UnlockedLevelCountKey, 1), 1, LevelCount);
     private static bool openLevelSelectOnMenuLoad;
 
     /// <summary>Seviyenin seed'i: LevelGenerator'daki temel seed + seviye numarası.</summary>
@@ -22,15 +25,24 @@ public static class LevelSession
 
     public static void SelectLevel(int index)
     {
-        if (index < 0 || index >= LevelCount)
+        if (index < 0 || index >= LevelCount || index >= UnlockedLevelCount)
         {
-            Debug.LogWarning($"[LevelSession] Invalid level index: {index}");
+            Debug.LogWarning($"[LevelSession] Level {index + 1} is locked or invalid.");
             return;
         }
 
-        LevelIndex = index;
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Arena");
+        if (!SceneTransition.Load("Arena")) return;
+        LevelIndex = index;
+    }
+
+    public static void CompleteCurrentLevel()
+    {
+        int unlockedCount = Mathf.Min(LevelIndex + 2, LevelCount);
+        if (unlockedCount <= UnlockedLevelCount) return;
+
+        PlayerPrefs.SetInt(UnlockedLevelCountKey, unlockedCount);
+        PlayerPrefs.Save();
     }
 
     public static int BestStars(int index)
@@ -46,6 +58,15 @@ public static class LevelSession
 
         PlayerPrefs.SetInt(BestStarsKeyPrefix + LevelIndex, earned);
         PlayerPrefs.Save();
+    }
+
+    public static void ResetProgress()
+    {
+        PlayerPrefs.DeleteKey(UnlockedLevelCountKey);
+        for (int index = 0; index < LevelCount; index++)
+            PlayerPrefs.DeleteKey(BestStarsKeyPrefix + index);
+        PlayerPrefs.Save();
+        LevelIndex = 0;
     }
 
     public static bool ConsumeOpenLevelSelectRequest()
@@ -78,21 +99,28 @@ public static class LevelSession
             return;
         }
 
+        if (LevelIndex + 1 >= UnlockedLevelCount)
+        {
+            Debug.LogWarning("[LevelSession] Next level is still locked.");
+            return;
+        }
+
+        Time.timeScale = 1f;
+        if (!SceneTransition.Load(SceneManager.GetActiveScene().name)) return;
         LevelIndex++;
-        Reload();
     }
 
     private static void OpenMenu(bool showLevelSelect)
     {
-        openLevelSelectOnMenuLoad = showLevelSelect;
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");
+        if (!SceneTransition.Load("MainMenu")) return;
+        openLevelSelectOnMenuLoad = showLevelSelect;
     }
 
     private static void Reload()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneTransition.Load(SceneManager.GetActiveScene().name);
     }
 
     // Editörde "Enter Play Mode" ayarlarında domain reload kapalıysa statik değerler oyunlar arası

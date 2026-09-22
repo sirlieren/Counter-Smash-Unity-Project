@@ -87,7 +87,11 @@ public class LevelEndUI : MonoBehaviour
     private void HandleLevelEnded(bool won, int stars)
     {
         lastResultWon = won;
-        if (won) LevelSession.RecordWin(stars);
+        if (won)
+        {
+            LevelSession.RecordWin(stars);
+            LevelSession.CompleteCurrentLevel();
+        }
         StartCoroutine(ShowRoutine(won, stars));
     }
 
