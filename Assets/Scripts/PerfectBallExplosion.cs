@@ -34,6 +34,9 @@ public class PerfectBallExplosion : MonoBehaviour
         ownBody = GetComponent<Rigidbody>();
     }
 
+    /// <summary>Bu atış perfect mi (Activate() çağrıldı mı) — başka efektlerin çakışmaması için.</summary>
+    public bool IsArmed => armed;
+
     public void Activate()
     {
         armed = true;

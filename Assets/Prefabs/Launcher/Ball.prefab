@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8472910384720194756}
   - component: {fileID: 7814861766244251359}
   - component: {fileID: 6429124016258240890}
+  - component: {fileID: 3351195369281009085}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -214,7 +215,7 @@ MonoBehaviour:
   radius: 1.5
   force: 6
   upwardsModifier: 0.5
-  explosionEffectPrefab: {fileID: 0}
+  explosionEffectPrefab: {fileID: 2433282508537954060, guid: 3ef3ae421f71c5c4e97fe12dc2fc6312, type: 3}
   explosionClips:
   - {fileID: 8300000, guid: 7bf84bb05a3a7e3439c20d82d132faaf, type: 3}
   - {fileID: 8300000, guid: 3f462153fd5b3b64b9322ca8400f8b3b, type: 3}
@@ -222,6 +223,23 @@ MonoBehaviour:
   - {fileID: 8300000, guid: bc57695e4b65bc844a34ae01014d1f4b, type: 3}
   - {fileID: 8300000, guid: a4915417d9e7f2744babcabad932d815, type: 3}
   explosionVolume: 0.9
+--- !u!114 &3351195369281009085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4349667196492605495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017cc657836a47189304baffeee9eaec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BallHitEffect
+  hitEffectPrefab: {fileID: 1429954232896169633, guid: 83036083a4ebcd34f98131bd3cf6f4d2, type: 3}
+  minImpactSpeed: 0.4
+  maxImpactSpeed: 8
+  minScale: 0.2
+  maxScale: 0.75
 --- !u!1 &6003160457075970573
 GameObject:
   m_ObjectHideFlags: 0
