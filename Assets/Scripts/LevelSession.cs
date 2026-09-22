@@ -6,13 +6,63 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class LevelSession
 {
+    public const int LevelCount = 20;
+    private const string BestStarsKeyPrefix = "ToyRoomSmash.BestStars.";
+
     /// <summary>0 tabanlı seviye numarası.</summary>
     public static int LevelIndex { get; private set; }
+    public static bool IsLastLevel => LevelIndex >= LevelCount - 1;
+    private static bool openLevelSelectOnMenuLoad;
 
     /// <summary>Seviyenin seed'i: LevelGenerator'daki temel seed + seviye numarası.</summary>
     public static int SeedFor(int baseSeed)
     {
         return baseSeed + LevelIndex;
+    }
+
+    public static void SelectLevel(int index)
+    {
+        if (index < 0 || index >= LevelCount)
+        {
+            Debug.LogWarning($"[LevelSession] Invalid level index: {index}");
+            return;
+        }
+
+        LevelIndex = index;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Arena");
+    }
+
+    public static int BestStars(int index)
+    {
+        if (index < 0 || index >= LevelCount) return 0;
+        return Mathf.Clamp(PlayerPrefs.GetInt(BestStarsKeyPrefix + index, 0), 0, 3);
+    }
+
+    public static void RecordWin(int stars)
+    {
+        int earned = Mathf.Clamp(stars, 1, 3);
+        if (earned <= BestStars(LevelIndex)) return;
+
+        PlayerPrefs.SetInt(BestStarsKeyPrefix + LevelIndex, earned);
+        PlayerPrefs.Save();
+    }
+
+    public static bool ConsumeOpenLevelSelectRequest()
+    {
+        bool requested = openLevelSelectOnMenuLoad;
+        openLevelSelectOnMenuLoad = false;
+        return requested;
+    }
+
+    public static void ReturnToMenu()
+    {
+        OpenMenu(showLevelSelect: false);
+    }
+
+    public static void ReturnToLevelSelect()
+    {
+        OpenMenu(showLevelSelect: true);
     }
 
     public static void Retry()
@@ -22,8 +72,21 @@ public static class LevelSession
 
     public static void NextLevel()
     {
+        if (IsLastLevel)
+        {
+            ReturnToLevelSelect();
+            return;
+        }
+
         LevelIndex++;
         Reload();
+    }
+
+    private static void OpenMenu(bool showLevelSelect)
+    {
+        openLevelSelectOnMenuLoad = showLevelSelect;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 
     private static void Reload()
@@ -38,5 +101,6 @@ public static class LevelSession
     private static void ResetOnPlay()
     {
         LevelIndex = 0;
+        openLevelSelectOnMenuLoad = false;
     }
 }

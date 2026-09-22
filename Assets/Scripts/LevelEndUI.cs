@@ -19,6 +19,7 @@ public class LevelEndUI : MonoBehaviour
     [SerializeField] private Button retryButton;
     [Tooltip("Sadece kazanınca görünür.")]
     [SerializeField] private Button nextLevelButton;
+    [SerializeField] private Button menuButton;
 
     [Header("Yıldızlar")]
     [Tooltip("Soldan sağa 3 BOŞ yıldız. Arka plandaki sabit yuvalar — panel açılınca hepsi boş görünür.")]
@@ -55,6 +56,7 @@ public class LevelEndUI : MonoBehaviour
     [SerializeField] private float volume = 0.8f;
 
     private Vector3[] filledStarDefaultScales;
+    private bool lastResultWon;
 
     private void Awake()
     {
@@ -67,8 +69,9 @@ public class LevelEndUI : MonoBehaviour
         }
 
         if (panelRoot != null) panelRoot.SetActive(false);
-        if (retryButton != null) retryButton.onClick.AddListener(LevelSession.Retry);
-        if (nextLevelButton != null) nextLevelButton.onClick.AddListener(LevelSession.NextLevel);
+        if (retryButton != null && retryButton != nextLevelButton) retryButton.onClick.AddListener(LevelSession.Retry);
+        if (nextLevelButton != null) nextLevelButton.onClick.AddListener(HandlePrimaryButton);
+        if (menuButton != null) menuButton.onClick.AddListener(LevelSession.ReturnToMenu);
     }
 
     private void OnEnable()
@@ -83,14 +86,30 @@ public class LevelEndUI : MonoBehaviour
 
     private void HandleLevelEnded(bool won, int stars)
     {
+        lastResultWon = won;
+        if (won) LevelSession.RecordWin(stars);
         StartCoroutine(ShowRoutine(won, stars));
+    }
+
+    private void HandlePrimaryButton()
+    {
+        if (lastResultWon) LevelSession.NextLevel();
+        else LevelSession.Retry();
     }
 
     private IEnumerator ShowRoutine(bool won, int stars)
     {
         if (titleText != null) titleText.text = won ? winTitle : loseTitle;
         if (levelText != null) levelText.text = string.Format(levelFormat, LevelSession.LevelIndex + 1);
-        if (nextLevelButton != null) nextLevelButton.gameObject.SetActive(won);
+        bool sharedButton = retryButton != null && retryButton == nextLevelButton;
+        if (retryButton != null && !sharedButton) retryButton.gameObject.SetActive(!won);
+        if (nextLevelButton != null)
+        {
+            nextLevelButton.gameObject.SetActive(won || sharedButton);
+            TMP_Text buttonLabel = nextLevelButton.GetComponentInChildren<TMP_Text>(true);
+            if (buttonLabel != null)
+                buttonLabel.text = !won ? "TRY AGAIN" : LevelSession.IsLastLevel ? "LEVELS" : "NEXT LEVEL";
+        }
 
         // Kazanınca 3 boş yuva görünür (hepsi boş), dolu yıldızlar gizli beklemede. Kaybedince yıldız satırı hiç görünmez.
         foreach (RectTransform empty in emptyStars)
