@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MenuBrickRain : MonoBehaviour
@@ -18,9 +19,40 @@ public class MenuBrickRain : MonoBehaviour
     [Tooltip("Düşerken tumbling hissi için rastgele başlangıç açısal hızı (derece/saniye).")]
     [SerializeField] private float maxAngularSpeed = 180f;
 
+    private struct ActiveBrick
+    {
+        public GameObject prefab;
+        public GameObject instance;
+        public float returnAt;
+    }
+
+    private readonly Dictionary<GameObject, Stack<GameObject>> idle = new Dictionary<GameObject, Stack<GameObject>>();
+    private readonly List<ActiveBrick> activeBricks = new List<ActiveBrick>();
+    private Coroutine spawnLoop;
+
     private void OnEnable()
     {
-        StartCoroutine(SpawnLoop());
+        spawnLoop = StartCoroutine(SpawnLoop());
+    }
+
+    private void OnDisable()
+    {
+        if (spawnLoop != null) StopCoroutine(spawnLoop);
+        spawnLoop = null;
+        for (int i = activeBricks.Count - 1; i >= 0; i--)
+            ReturnBrick(activeBricks[i]);
+        activeBricks.Clear();
+    }
+
+    private void Update()
+    {
+        float now = Time.time;
+        for (int i = activeBricks.Count - 1; i >= 0; i--)
+        {
+            if (now < activeBricks[i].returnAt) continue;
+            ReturnBrick(activeBricks[i]);
+            activeBricks.RemoveAt(i);
+        }
     }
 
     private IEnumerator SpawnLoop()
@@ -37,16 +69,42 @@ public class MenuBrickRain : MonoBehaviour
         if (brickPrefabs == null || brickPrefabs.Length == 0) return;
 
         GameObject prefab = brickPrefabs[Random.Range(0, brickPrefabs.Length)];
+        if (prefab == null) return;
         Vector3 spawnPos = transform.position + new Vector3(Random.Range(-spawnWidth * 0.5f, spawnWidth * 0.5f), 0f, 0f);
 
-        GameObject brick = Instantiate(prefab, spawnPos, Random.rotation);
+        Stack<GameObject> stack = GetStack(prefab);
+        GameObject brick = stack.Count > 0 ? stack.Pop() : Instantiate(prefab, transform);
+        brick.transform.SetPositionAndRotation(spawnPos, Random.rotation);
+        brick.SetActive(true);
 
         Rigidbody rb = brick.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.angularVelocity = Random.insideUnitSphere * maxAngularSpeed * Mathf.Deg2Rad;
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Random.insideUnitSphere * maxAngularSpeed * Mathf.Deg2Rad;
+                rb.WakeUp();
+            }
         }
 
-        Destroy(brick, lifeTime);
+        activeBricks.Add(new ActiveBrick { prefab = prefab, instance = brick, returnAt = Time.time + lifeTime });
+    }
+
+    private Stack<GameObject> GetStack(GameObject prefab)
+    {
+        if (!idle.TryGetValue(prefab, out Stack<GameObject> stack))
+        {
+            stack = new Stack<GameObject>();
+            idle.Add(prefab, stack);
+        }
+        return stack;
+    }
+
+    private void ReturnBrick(ActiveBrick entry)
+    {
+        if (entry.instance == null) return;
+        entry.instance.SetActive(false);
+        GetStack(entry.prefab).Push(entry.instance);
     }
 }

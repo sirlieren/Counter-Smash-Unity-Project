@@ -172,13 +172,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BrickImpactSound
   impactClips:
-  - {fileID: 8300000, guid: 9e8fb86d6d2358546822ead27c4575ea, type: 3}
-  - {fileID: 8300000, guid: 73edc9a2943b6474281066f55575833f, type: 3}
-  - {fileID: 8300000, guid: 55a5792969882c0429a57aaa96413461, type: 3}
-  - {fileID: 8300000, guid: 5edec741ed734e247a57961e724e987e, type: 3}
-  - {fileID: 8300000, guid: 25bb36a932ce9ec4ebad0a2ab2a0a4fa, type: 3}
-  - {fileID: 8300000, guid: 1de9952b37ebc9a4a920c7dca913905a, type: 3}
-  - {fileID: 8300000, guid: 05e926e7a9c5ef44387fcffc4c0f81fc, type: 3}
+  - {fileID: 8300000, guid: b37c0ab28e03479479382f7f51e33851, type: 3}
+  - {fileID: 8300000, guid: 6cffc764f07e9cd45b11d649b6460a24, type: 3}
+  - {fileID: 8300000, guid: dcff85120602abb448060f417c33b257, type: 3}
+  - {fileID: 8300000, guid: 454cfe53e37c0d244b0d4525e9c3fd09, type: 3}
+  - {fileID: 8300000, guid: 571debd78b60ef24c8700f8b04585753, type: 3}
+  firstBrickImpactClips:
+  - {fileID: 8300000, guid: 803bf1698be8e354a9165701fb332462, type: 3}
+  - {fileID: 8300000, guid: 2aef822d97970c34db0124bfc701e10a, type: 3}
+  - {fileID: 8300000, guid: 9c253dcbc8472014da6024997e211338, type: 3}
+  - {fileID: 8300000, guid: fcbe84a4ae472e441861b4ccb020e118, type: 3}
+  - {fileID: 8300000, guid: dd4eef759da43884da0f4a0903eff3d0, type: 3}
+  firstBrickVolumeMultiplier: 1.2
+  laterBrickVolumeMultiplier: 0.4
   minImpactSpeed: 0.4
   maxImpactSpeed: 8
   minVolume: 0.15

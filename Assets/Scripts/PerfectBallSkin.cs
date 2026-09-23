@@ -21,6 +21,8 @@ public class PerfectBallSkin : MonoBehaviour
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     private Material[] materials;
+    private Color[] baseColors;
+    private Color[] emissionColors;
 
     private void Awake()
     {
@@ -29,25 +31,45 @@ public class PerfectBallSkin : MonoBehaviour
 
     public void Activate()
     {
-        if (targets == null || targets.Length == 0)
+        if (materials == null)
         {
-            targets = GetComponentsInChildren<MeshRenderer>();
-        }
+            if (targets == null || targets.Length == 0)
+                targets = GetComponentsInChildren<MeshRenderer>();
 
-        // renderer.materials paylaşılan asset'i değil, bu topa özel kopyaları döndürür —
-        // böylece diğer toplar ve tuğlalar etkilenmez.
-        var list = new System.Collections.Generic.List<Material>();
-        foreach (Renderer target in targets)
-        {
-            if (target == null) continue;
-            foreach (Material material in target.materials)
+            // Her top için materyal kopyaları bir kez oluşturulur; sonraki kullanımlarda aynıları kullanılır.
+            var list = new System.Collections.Generic.List<Material>();
+            foreach (Renderer target in targets)
             {
-                material.EnableKeyword("_EMISSION");
-                list.Add(material);
+                if (target == null) continue;
+                foreach (Material material in target.materials)
+                {
+                    material.EnableKeyword("_EMISSION");
+                    list.Add(material);
+                }
+            }
+            materials = list.ToArray();
+            baseColors = new Color[materials.Length];
+            emissionColors = new Color[materials.Length];
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (materials[i].HasProperty(BaseColorId)) baseColors[i] = materials[i].GetColor(BaseColorId);
+                if (materials[i].HasProperty(EmissionColorId)) emissionColors[i] = materials[i].GetColor(EmissionColorId);
             }
         }
-        materials = list.ToArray();
         enabled = true;
+    }
+
+    public void Deactivate()
+    {
+        enabled = false;
+        if (materials == null) return;
+        for (int i = 0; i < materials.Length; i++)
+        {
+            Material material = materials[i];
+            if (material == null) continue;
+            if (material.HasProperty(BaseColorId)) material.SetColor(BaseColorId, baseColors[i]);
+            if (material.HasProperty(EmissionColorId)) material.SetColor(EmissionColorId, emissionColors[i]);
+        }
     }
 
     private void Update()

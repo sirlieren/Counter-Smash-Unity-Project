@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Top ilk temasında (perfect atış değilse) çarpma noktasında bir parçacık efekti yaratır.
+/// Topun ilk tuğla temasında (perfect atış değilse) çarpma noktasında bir parçacık efekti yaratır.
 /// Perfect atışlarda bu efekt atlanır — PerfectBallExplosion zaten kendi efektini basıyor.
 /// Ball prefabına eklenir.
 /// </summary>
@@ -27,9 +27,16 @@ public class BallHitEffect : MonoBehaviour
         explosion = GetComponent<PerfectBallExplosion>();
     }
 
+    private void Start()
+    {
+        GameplayEffectPool.Prewarm(hitEffectPrefab, 3);
+    }
+
+    public void ResetForReuse() => hasHit = false;
+
     private void OnCollisionEnter(Collision collision)
     {
-        if (hasHit) return;
+        if (hasHit || collision.collider.GetComponentInParent<ClearableBrick>() == null) return;
         hasHit = true;
 
         if (explosion != null && explosion.IsArmed) return;
@@ -38,7 +45,6 @@ public class BallHitEffect : MonoBehaviour
         float normalizedIntensity = Mathf.InverseLerp(minImpactSpeed, maxImpactSpeed, collision.relativeVelocity.magnitude);
         float scale = Mathf.Lerp(minScale, maxScale, normalizedIntensity);
 
-        GameObject effect = Instantiate(hitEffectPrefab, collision.GetContact(0).point, Quaternion.identity);
-        effect.transform.localScale = Vector3.one * scale;
+        GameplayEffectPool.Spawn(hitEffectPrefab, collision.GetContact(0).point, Quaternion.identity, scale);
     }
 }

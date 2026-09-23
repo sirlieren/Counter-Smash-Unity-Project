@@ -893,6 +893,7 @@ MonoBehaviour:
   panelRoot: {fileID: 202450522}
   titleText: {fileID: 1401589545}
   levelText: {fileID: 176249335}
+  newBestBadge: {fileID: 0}
   retryButton: {fileID: 249255576}
   nextLevelButton: {fileID: 249255576}
   menuButton: {fileID: 213564681}
@@ -1263,6 +1264,7 @@ GameObject:
   - component: {fileID: 630370512}
   - component: {fileID: 630370511}
   - component: {fileID: 630370510}
+  - component: {fileID: 630370515}
   m_Layer: 5
   m_Name: HUD_UI
   m_TagString: Untagged
@@ -1371,6 +1373,27 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &630370515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 630370509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3ce1d9741bf4f98b780e81bed971f62, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::BrickProgressHud
+  remainingText: {fileID: 0}
+  comboText: {fileID: 0}
+  font: {fileID: 11400000, guid: b0728ab1c9a5c61489c8c02a92c22418, type: 2}
+  remainingOffset: {x: 0, y: -150}
+  comboOffset: {x: 0, y: -220}
+  comboWindow: 0.8
+  comboVisibleDuration: 0.7
+  punchScale: 1.2
+  punchDuration: 0.2
 --- !u!1 &645871466
 GameObject:
   m_ObjectHideFlags: 0
@@ -1901,6 +1924,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c8ebfc75cffa4ab48b0738996decd57f, type: 3}
   - {fileID: 8300000, guid: e1a911f0a31abda46b179fb685862a1a, type: 3}
   launchVolume: 0.9
+  chargeLoopClip: {fileID: 8300000, guid: 66fcbdae72f1b0246ad841e8abb98bf3, type: 3}
+  maxChargeLoopVolume: 0.18
+  minChargeLoopPitch: 0.85
+  maxChargeLoopPitch: 1.15
+  perfectReadyClip: {fileID: 8300000, guid: 7a7e17b664bbc6e4480545841b9e9f5b, type: 3}
+  perfectReadyVolume: 0.35
+  perfectCircleColor: {r: 1, g: 0.85, b: 0.25, a: 0.9}
   perfectThreshold: 0.98
   perfectSpeedMultiplier: 1.25
   perfectLaunchClips:
@@ -3124,6 +3154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFlash
   flashColor: {r: 1, g: 1, b: 1, a: 1}
   peakAlpha: 0.6
+  launchPeakMultiplier: 0.2
   fadeDuration: 0.18
   fadeSharpness: 2
   sortingOrder: 100
@@ -3142,6 +3173,9 @@ MonoBehaviour:
   minIntensityToTrigger: 0.6
   freezeDuration: 0.03
   freezeTimeScale: 0.02
+  perfectSlowDuration: 0.22
+  perfectSlowTimeScale: 0.35
+  recoveryDuration: 0.12
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

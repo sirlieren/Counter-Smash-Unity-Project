@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -45,6 +46,16 @@ public class BallLauncher : MonoBehaviour
     [SerializeField] private AudioClip[] launchClips;
     [SerializeField] private float launchVolume = 0.9f;
 
+    [Header("Şarj sesi ve perfect işareti")]
+    [Tooltip("Kesintisiz bir loop klibi. Basılı tutma boyunca kısık çalar.")]
+    [SerializeField] private AudioClip chargeLoopClip;
+    [SerializeField, Range(0f, 1f)] private float maxChargeLoopVolume = 0.18f;
+    [SerializeField] private float minChargeLoopPitch = 0.85f;
+    [SerializeField] private float maxChargeLoopPitch = 1.15f;
+    [SerializeField] private AudioClip perfectReadyClip;
+    [SerializeField, Range(0f, 1f)] private float perfectReadyVolume = 0.35f;
+    [SerializeField] private Color perfectCircleColor = new Color(1f, 0.85f, 0.25f, 0.9f);
+
     [Header("Perfect atış")]
     [Tooltip("Güç değeri (0-1, eğriden geçmiş hâli) bu eşiğe ulaşınca atış 'perfect' sayılır.")]
     [SerializeField, Range(0.5f, 1f)] private float perfectThreshold = 0.98f;
@@ -61,6 +72,11 @@ public class BallLauncher : MonoBehaviour
     private float pressStartTime;
     private float cooldownTimer;
     private int remainingAmmo;
+    private readonly Stack<BallProjectile> ballPool = new Stack<BallProjectile>();
+    private AudioSource chargeLoopSource;
+    private SpriteRenderer chargeCircleRenderer;
+    private Color normalCircleColor;
+    private bool perfectReadySignalled;
 
     public int RemainingAmmo => remainingAmmo;
     public static event System.Action<int> OnAmmoChanged;
@@ -73,8 +89,16 @@ public class BallLauncher : MonoBehaviour
     private void Start()
     {
         if (aimCamera == null) aimCamera = Camera.main;
+        chargeCircleRenderer = innerChargeCircle != null ? innerChargeCircle.GetComponent<SpriteRenderer>() : null;
+        if (chargeCircleRenderer != null) normalCircleColor = chargeCircleRenderer.color;
+        chargeLoopSource = gameObject.AddComponent<AudioSource>();
+        chargeLoopSource.playOnAwake = false;
+        chargeLoopSource.loop = true;
+        chargeLoopSource.spatialBlend = 0f;
+        chargeLoopSource.clip = chargeLoopClip;
         HideChargeVisual();
         remainingAmmo = startingAmmo;
+        PrewarmBalls();
         OnAmmoChanged?.Invoke(remainingAmmo);
         if (remainingAmmo > 0) SpawnBall();
     }
@@ -118,6 +142,13 @@ public class BallLauncher : MonoBehaviour
         chargeProgress = 0f;
         chargeValue = 0f;
         pressStartTime = Time.time;
+        perfectReadySignalled = false;
+        if (chargeLoopSource.clip != null)
+        {
+            chargeLoopSource.volume = 0f;
+            chargeLoopSource.pitch = minChargeLoopPitch;
+            chargeLoopSource.Play();
+        }
         ShowChargeVisual();
         UpdateChargeVisual();
     }
@@ -130,6 +161,22 @@ public class BallLauncher : MonoBehaviour
         chargeProgress += Time.deltaTime / chargeCycleDuration;
         if (chargeProgress >= 1f) chargeProgress -= 1f;
         chargeValue = 1f - Mathf.Pow(1f - chargeProgress, chargeCurvePower);
+        if (chargeLoopSource.isPlaying)
+        {
+            float targetVolume = maxChargeLoopVolume * Mathf.Lerp(0.35f, 1f, chargeValue);
+            chargeLoopSource.volume = Mathf.MoveTowards(chargeLoopSource.volume, targetVolume, Time.unscaledDeltaTime * 1.5f);
+            chargeLoopSource.pitch = Mathf.Lerp(minChargeLoopPitch, maxChargeLoopPitch, chargeValue);
+        }
+        bool inPerfectWindow = chargeValue >= perfectThreshold;
+        if (inPerfectWindow && !perfectReadySignalled)
+        {
+            perfectReadySignalled = true;
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayOneShot(perfectReadyClip, spawnPoint.position, perfectReadyVolume, spatial: false);
+        }
+        else if (!inPerfectWindow) perfectReadySignalled = false;
+        if (chargeCircleRenderer != null)
+            chargeCircleRenderer.color = inPerfectWindow ? perfectCircleColor : normalCircleColor;
         UpdateChargeVisual();
         OnChargeChanged?.Invoke(chargeValue);
     }
@@ -137,6 +184,7 @@ public class BallLauncher : MonoBehaviour
     private void FireBall(Vector2 releaseScreenPos)
     {
         isCharging = false;
+        StopChargeFeedback();
         HideChargeVisual();
         OnChargeChanged?.Invoke(0f);
 
@@ -153,8 +201,6 @@ public class BallLauncher : MonoBehaviour
             float speed = Mathf.Lerp(minShotSpeed, maxShotSpeed, chargeValue);
             bool isPerfect = chargeValue >= perfectThreshold;
             if (isPerfect) speed *= perfectSpeedMultiplier;
-
-            Debug.Log($"[BallLauncher] screenPos={releaseScreenPos}, screenSize=({Screen.width},{Screen.height}), camPos={aimCamera.transform.position}, camRot={aimCamera.transform.eulerAngles}, targetPoint={targetPoint}, spawn={spawnPoint.position}, direction={direction}");
 
             float spinSpeed = Mathf.Lerp(minSpinSpeed, maxSpinSpeed, chargeValue) * Mathf.Deg2Rad;
 
@@ -197,9 +243,21 @@ public class BallLauncher : MonoBehaviour
     public void DisableInput()
     {
         isCharging = false;
+        StopChargeFeedback();
         HideChargeVisual();
         OnChargeChanged?.Invoke(0f);
         enabled = false;
+    }
+
+    private void OnDisable()
+    {
+        StopChargeFeedback();
+    }
+
+    private void StopChargeFeedback()
+    {
+        if (chargeLoopSource != null) chargeLoopSource.Stop();
+        if (chargeCircleRenderer != null) chargeCircleRenderer.color = normalCircleColor;
     }
 
     private Vector3 ScreenPointToAimPlane(Vector2 screenPos)
@@ -221,9 +279,37 @@ public class BallLauncher : MonoBehaviour
     private void SpawnBall()
     {
         cooldownTimer = 0f;
-        GameObject instance = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
-        currentBall = instance.GetComponent<Rigidbody>();
-        currentBall.isKinematic = true;
+        BallProjectile ball = ballPool.Count > 0 ? ballPool.Pop() : CreatePooledBall();
+        ball.transform.SetParent(null, true);
+        ball.PrepareForLaunch(spawnPoint.position, spawnPoint.rotation);
+        currentBall = ball.Body;
+    }
+
+    private void PrewarmBalls()
+    {
+        for (int i = 0; i < startingAmmo; i++) ballPool.Push(CreatePooledBall());
+    }
+
+    private BallProjectile CreatePooledBall()
+    {
+        GameObject instance = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation, transform);
+        BallProjectile ball = instance.GetComponent<BallProjectile>();
+        ball.SetPoolOwner(this);
+        instance.SetActive(false);
+        return ball;
+    }
+
+    public void ReturnBall(BallProjectile ball)
+    {
+        if (ball == null || !ball.gameObject.activeSelf) return;
+        if (currentBall == ball.Body)
+        {
+            currentBall = null;
+            cooldownTimer = shotCooldown;
+        }
+        ball.gameObject.SetActive(false);
+        ball.transform.SetParent(transform, false);
+        ballPool.Push(ball);
     }
 
     private void UpdateCrosshairPosition(Vector3 worldPos)

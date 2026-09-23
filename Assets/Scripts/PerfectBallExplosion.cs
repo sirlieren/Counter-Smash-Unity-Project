@@ -26,12 +26,25 @@ public class PerfectBallExplosion : MonoBehaviour
     private static readonly Collider[] overlapBuffer = new Collider[64];
 
     private Rigidbody ownBody;
+    private BallProjectile projectile;
     private bool armed;
     private bool exploded;
 
     private void Awake()
     {
         ownBody = GetComponent<Rigidbody>();
+        projectile = GetComponent<BallProjectile>();
+    }
+
+    private void Start()
+    {
+        GameplayEffectPool.Prewarm(explosionEffectPrefab, 1);
+    }
+
+    public void ResetForReuse()
+    {
+        armed = false;
+        exploded = false;
     }
 
     /// <summary>Bu atış perfect mi (Activate() çağrıldı mı) — başka efektlerin çakışmaması için.</summary>
@@ -44,12 +57,13 @@ public class PerfectBallExplosion : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!armed || exploded) return;
+        if (!armed || exploded || collision.collider.GetComponentInParent<ClearableBrick>() == null) return;
         exploded = true;
 
         Vector3 center = collision.GetContact(0).point;
         Explode(center);
-        Destroy(gameObject);
+        if (projectile != null) projectile.Despawn();
+        else Destroy(gameObject);
     }
 
     private void Explode(Vector3 center)
@@ -62,7 +76,7 @@ public class PerfectBallExplosion : MonoBehaviour
             body.AddExplosionForce(force, center, radius, upwardsModifier, ForceMode.Impulse);
         }
 
-        if (explosionEffectPrefab != null) Instantiate(explosionEffectPrefab, center, Quaternion.identity);
+        GameplayEffectPool.Spawn(explosionEffectPrefab, center, Quaternion.identity);
 
         if (AudioManager.Instance != null)
         {

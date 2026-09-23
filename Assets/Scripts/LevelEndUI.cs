@@ -16,6 +16,7 @@ public class LevelEndUI : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [Tooltip("İsteğe bağlı: 'Level 3' gibi seviye numarası yazısı.")]
     [SerializeField] private TMP_Text levelText;
+    [SerializeField] private TMP_Text newBestBadge;
     [SerializeField] private Button retryButton;
     [Tooltip("Sadece kazanınca görünür.")]
     [SerializeField] private Button nextLevelButton;
@@ -57,9 +58,13 @@ public class LevelEndUI : MonoBehaviour
 
     private Vector3[] filledStarDefaultScales;
     private bool lastResultWon;
+    private bool lastResultNewBest;
 
     private void Awake()
     {
+        if (newBestBadge == null && panelRoot != null && titleText != null)
+            newBestBadge = CreateNewBestBadge();
+        if (newBestBadge != null) newBestBadge.gameObject.SetActive(false);
         // Yıldızların sahnede ayarlanmış boyutu "olması gereken" boyut — animasyon oraya döner.
         filledStarDefaultScales = new Vector3[filledStars.Length];
         for (int i = 0; i < filledStars.Length; i++)
@@ -87,6 +92,7 @@ public class LevelEndUI : MonoBehaviour
     private void HandleLevelEnded(bool won, int stars)
     {
         lastResultWon = won;
+        lastResultNewBest = won && stars > LevelSession.BestStars(LevelSession.LevelIndex);
         if (won)
         {
             LevelSession.RecordWin(stars);
@@ -105,6 +111,7 @@ public class LevelEndUI : MonoBehaviour
     {
         if (titleText != null) titleText.text = won ? winTitle : loseTitle;
         if (levelText != null) levelText.text = string.Format(levelFormat, LevelSession.LevelIndex + 1);
+        if (newBestBadge != null) newBestBadge.gameObject.SetActive(won && lastResultNewBest);
         bool sharedButton = retryButton != null && retryButton == nextLevelButton;
         if (retryButton != null && !sharedButton) retryButton.gameObject.SetActive(!won);
         if (nextLevelButton != null)
@@ -138,6 +145,27 @@ public class LevelEndUI : MonoBehaviour
             if (filledStars[i] != null) StartCoroutine(StarArrival(i));
             yield return new WaitForSecondsRealtime(starInterval);
         }
+    }
+
+    private TMP_Text CreateNewBestBadge()
+    {
+        var badgeObject = new GameObject("NewBestBadge", typeof(RectTransform));
+        badgeObject.transform.SetParent(panelRoot.transform, false);
+        var rect = (RectTransform)badgeObject.transform;
+        var titleRect = (RectTransform)titleText.transform;
+        rect.anchorMin = titleRect.anchorMin;
+        rect.anchorMax = titleRect.anchorMax;
+        rect.pivot = titleRect.pivot;
+        rect.anchoredPosition = titleRect.anchoredPosition + new Vector2(0f, -100f);
+        rect.sizeDelta = titleRect.sizeDelta;
+        var badge = badgeObject.AddComponent<TextMeshProUGUI>();
+        badge.font = titleText.font;
+        badge.fontSize = titleText.fontSize * 0.4f;
+        badge.alignment = TextAlignmentOptions.Center;
+        badge.color = new Color(1f, 0.84f, 0.28f);
+        badge.text = "NEW BEST!";
+        badge.raycastTarget = false;
+        return badge;
     }
 
     private IEnumerator StarArrival(int index)

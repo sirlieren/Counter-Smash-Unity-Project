@@ -18,6 +18,7 @@ public class ClearableBrick : MonoBehaviour
     // buradan yapılır — her karede sahneyi taramak yerine kayıt tutuluyor.
     private static readonly HashSet<ClearableBrick> active = new HashSet<ClearableBrick>();
     private static readonly List<ClearableBrick> outsidePlayArea = new List<ClearableBrick>();
+    private static int remainingCount;
 
     private Rigidbody body;
 
@@ -26,12 +27,7 @@ public class ClearableBrick : MonoBehaviour
     /// <summary>Henüz temizlenmemiş tuğla sayısı.</summary>
     public static int CountRemaining()
     {
-        int count = 0;
-        foreach (ClearableBrick brick in active)
-        {
-            if (!brick.IsCleared) count++;
-        }
-        return count;
+        return remainingCount;
     }
 
     /// <summary>Temizlenmemiş tuğlalardan herhangi biri verilen hızın (dünya birimi/sn veya rad/sn) üstünde hareket ediyor mu.</summary>
@@ -79,18 +75,19 @@ public class ClearableBrick : MonoBehaviour
 
     private void OnEnable()
     {
-        active.Add(this);
+        if (active.Add(this) && !IsCleared) remainingCount++;
     }
 
     private void OnDisable()
     {
-        active.Remove(this);
+        if (active.Remove(this) && !IsCleared) remainingCount--;
     }
 
     public void MarkCleared()
     {
         if (IsCleared) return;
         IsCleared = true;
+        if (active.Contains(this)) remainingCount--;
         OnCleared?.Invoke(this);
 
         if (AudioManager.Instance != null)

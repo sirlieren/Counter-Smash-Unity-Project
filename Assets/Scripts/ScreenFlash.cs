@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Perfect atış çıktığı anda ekranı kısa süreliğine renkle (varsayılan beyaz) parlatıp söndürür.
+/// Perfect atışın çıkışında hafif, tuğla patlamasında güçlü bir ekran parlaması gösterir.
 /// Sahnede hazır Canvas gerekmez — kendi overlay Canvas'ını ve tam ekran Image'ını çalışma anında kurar.
 /// Herhangi bir objeye eklenebilir.
 /// </summary>
@@ -11,6 +11,7 @@ public class ScreenFlash : MonoBehaviour
     [SerializeField] private Color flashColor = Color.white;
     [Tooltip("Flaşın ilk andaki en yüksek opaklığı (0-1). 1 = ekran tamamen beyaz; küçük tutmak hem daha zarif hem gözü daha az yorar.")]
     [SerializeField, Range(0f, 1f)] private float peakAlpha = 0.6f;
+    [SerializeField, Range(0f, 1f)] private float launchPeakMultiplier = 0.2f;
     [Tooltip("Flaşın sönme süresi (saniye).")]
     [SerializeField] private float fadeDuration = 0.18f;
     [Tooltip("Sönme eğrisinin sertliği. 1 = doğrusal, büyüdükçe ilk anda çok parlak, sonra hızla sönen 'çakma' gibi bir his verir.")]
@@ -21,6 +22,7 @@ public class ScreenFlash : MonoBehaviour
     private Image flashImage;
     private float elapsed;
     private bool flashing;
+    private float currentPeakAlpha;
 
     private void Awake()
     {
@@ -30,11 +32,13 @@ public class ScreenFlash : MonoBehaviour
     private void OnEnable()
     {
         BallLauncher.OnPerfectShot += HandlePerfectShot;
+        PerfectBallExplosion.OnExploded += HandleExplosion;
     }
 
     private void OnDisable()
     {
         BallLauncher.OnPerfectShot -= HandlePerfectShot;
+        PerfectBallExplosion.OnExploded -= HandleExplosion;
         flashing = false;
         if (flashImage != null) flashImage.enabled = false;
     }
@@ -64,10 +68,21 @@ public class ScreenFlash : MonoBehaviour
 
     private void HandlePerfectShot()
     {
+        BeginFlash(peakAlpha * launchPeakMultiplier);
+    }
+
+    private void HandleExplosion(Vector3 point)
+    {
+        BeginFlash(peakAlpha);
+    }
+
+    private void BeginFlash(float alpha)
+    {
         elapsed = 0f;
         flashing = true;
+        currentPeakAlpha = alpha;
         flashImage.enabled = true;
-        SetAlpha(peakAlpha);
+        SetAlpha(currentPeakAlpha);
     }
 
     private void Update()
@@ -85,7 +100,7 @@ public class ScreenFlash : MonoBehaviour
             return;
         }
 
-        SetAlpha(peakAlpha * Mathf.Pow(1f - t, fadeSharpness));
+        SetAlpha(currentPeakAlpha * Mathf.Pow(1f - t, fadeSharpness));
     }
 
     private void SetAlpha(float alpha)

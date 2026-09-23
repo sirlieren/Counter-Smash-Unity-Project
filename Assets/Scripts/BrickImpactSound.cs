@@ -22,6 +22,12 @@ public class BrickImpactSound : MonoBehaviour
     [Tooltip("Rastgele seçilir — tekrarlanan tek bir sesin monoton durmaması için birkaç varyasyon iste.")]
     [SerializeField] private AudioClip[] impactClips;
 
+    [Header("Topun tuğlaya ilk teması")]
+    [Tooltip("Top üzerindeyken kullanılır. Boşsa normal çarpışma sesleri çalınır.")]
+    [SerializeField] private AudioClip[] firstBrickImpactClips;
+    [SerializeField, Range(0f, 2f)] private float firstBrickVolumeMultiplier = 1.2f;
+    [SerializeField, Range(0f, 1f)] private float laterBrickVolumeMultiplier = 0.4f;
+
     [Header("Şiddet eşiği ve ölçekleme")]
     [Tooltip("Bu hızın altındaki çarpışmalar sessiz kalır — sekerken/yuvarlanırken oluşan hafif sürtünme gürültüsünü eler.")]
     [SerializeField] private float minImpactSpeed = 1.5f;
@@ -34,22 +40,47 @@ public class BrickImpactSound : MonoBehaviour
     [SerializeField] private float retriggerCooldown = 0.08f;
 
     private float lastPlayTime = -999f;
+    private bool hasHitBrick;
+    private BallProjectile ball;
+
+    private void Awake()
+    {
+        ball = GetComponent<BallProjectile>();
+    }
+
+    public void ResetForReuse()
+    {
+        lastPlayTime = -999f;
+        hasHitBrick = false;
+        ShakeHitCount = 0;
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
-        float impactSpeed = collision.relativeVelocity.magnitude;
-        Debug.Log($"[BrickImpactSound] {gameObject.name} <- {collision.collider.name}, hız={impactSpeed:F2} (eşik={minImpactSpeed})");
+        bool hitBall = collision.collider.GetComponentInParent<BallProjectile>() != null;
+        if (ball == null && hitBall) return; // Top-tuğla teması yalnızca top tarafından seslendirilir.
 
-        if (Time.time - lastPlayTime < retriggerCooldown) return;
+        bool hitBrick = ball != null && collision.collider.GetComponentInParent<ClearableBrick>() != null;
+        if (ball != null && GetComponent<PerfectBallExplosion>() is PerfectBallExplosion explosion && explosion.IsArmed)
+            return; // Perfect patlamanın ayrı sesi ve sarsıntısı var.
+
+        float impactSpeed = collision.relativeVelocity.magnitude;
+
+        bool firstBrickHit = hitBrick && !hasHitBrick;
+        if (!firstBrickHit && Time.time - lastPlayTime < retriggerCooldown) return;
         if (impactSpeed < minImpactSpeed) return;
 
         float normalizedIntensity = Mathf.InverseLerp(minImpactSpeed, maxImpactSpeed, impactSpeed);
+        if (hitBrick) hasHitBrick = true;
         float volume = Mathf.Lerp(minVolume, 1f, normalizedIntensity);
+        if (hitBrick) volume *= firstBrickHit ? firstBrickVolumeMultiplier : laterBrickVolumeMultiplier;
         Vector3 contactPoint = collision.GetContact(0).point;
 
         if (AudioManager.Instance != null)
         {
-            AudioClip clip = AudioManager.PickRandom(impactClips);
+            AudioClip[] clips = firstBrickHit && firstBrickImpactClips != null && firstBrickImpactClips.Length > 0
+                ? firstBrickImpactClips : impactClips;
+            AudioClip clip = AudioManager.PickRandom(clips);
             AudioManager.Instance.PlayOneShot(clip, contactPoint, volume);
         }
 

@@ -15,17 +15,30 @@ public class HitStop : MonoBehaviour
     [SerializeField] private float freezeDuration = 0.03f;
     [SerializeField] private float freezeTimeScale = 0.02f;
 
+    [Header("Perfect çarpışma ağır çekimi")]
+    [SerializeField] private float perfectSlowDuration = 0.22f;
+    [SerializeField] private float perfectSlowTimeScale = 0.35f;
+    [SerializeField] private float recoveryDuration = 0.12f;
+
     private Coroutine activeFreeze;
+    private float restoreTimeScale = 1f;
 
     private void OnEnable()
     {
         BrickImpactSound.OnImpact += HandleImpact;
+        PerfectBallExplosion.OnExploded += HandlePerfectExplosion;
     }
 
     private void OnDisable()
     {
         BrickImpactSound.OnImpact -= HandleImpact;
-        if (activeFreeze != null) Time.timeScale = 1f;
+        PerfectBallExplosion.OnExploded -= HandlePerfectExplosion;
+        if (activeFreeze != null)
+        {
+            StopCoroutine(activeFreeze);
+            Time.timeScale = restoreTimeScale;
+            activeFreeze = null;
+        }
     }
 
     private void HandleImpact(Vector3 point, float intensity, BrickImpactSound source)
@@ -33,16 +46,35 @@ public class HitStop : MonoBehaviour
         // Zaten donmuş haldeyken yeni bir tetikleme gelirse görmezden gel — büyük bir yıkımda
         // onlarca sert çarpma üst üste donmayı sürekli uzatıp oyunu kilitlemesin diye.
         if (intensity < minIntensityToTrigger || activeFreeze != null) return;
-        activeFreeze = StartCoroutine(FreezeRoutine());
+        restoreTimeScale = Time.timeScale;
+        activeFreeze = StartCoroutine(FreezeRoutine(false));
     }
 
-    private IEnumerator FreezeRoutine()
+    private void HandlePerfectExplosion(Vector3 point)
+    {
+        if (activeFreeze != null) StopCoroutine(activeFreeze);
+        else restoreTimeScale = Time.timeScale;
+        activeFreeze = StartCoroutine(FreezeRoutine(true));
+    }
+
+    private IEnumerator FreezeRoutine(bool perfect)
     {
         Time.timeScale = freezeTimeScale;
         yield return new WaitForSecondsRealtime(freezeDuration);
-        // Şu an zamanı değiştiren tek sistem bu — ileride "perfect-shot slow-motion" eklenince
-        // burada sabit 1f yerine slow-motion'ın kendi hedef değerine dönmemiz gerekecek.
-        Time.timeScale = 1f;
+        if (perfect)
+        {
+            Time.timeScale = perfectSlowTimeScale;
+            yield return new WaitForSecondsRealtime(perfectSlowDuration);
+            float elapsed = 0f;
+            while (elapsed < recoveryDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                Time.timeScale = Mathf.Lerp(perfectSlowTimeScale, restoreTimeScale,
+                    Mathf.Clamp01(elapsed / recoveryDuration));
+                yield return null;
+            }
+        }
+        Time.timeScale = restoreTimeScale;
         activeFreeze = null;
     }
 }

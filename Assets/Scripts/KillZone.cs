@@ -20,6 +20,6 @@ public class KillZone : MonoBehaviour
         // Alana düşen top da yok edilsin — yoksa sonsuza kadar düşüp seviye sonu kontrolünü
         // "top hâlâ hareket ediyor" diye bekletir ve sahnede birikir.
         BallProjectile ball = other.GetComponentInParent<BallProjectile>();
-        if (ball != null) Destroy(ball.gameObject);
+        if (ball != null) ball.Despawn();
     }
 }
