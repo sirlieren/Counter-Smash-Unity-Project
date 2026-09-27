@@ -2,8 +2,8 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Yalnızca en sert çarpmalarda çok kısa bir "freeze-frame" — Time.timeScale'i anlık düşürüp
-/// geri toparlar. Ucuz ama etkisi büyük bir game feel hilesi.
+/// Yalnızca en sert çarpmalarda çok kısa bir "freeze-frame" uygular; Time.timeScale'i anlık
+/// düşürüp geri toparlayarak darbeyi vurgular.
 /// </summary>
 public class HitStop : MonoBehaviour
 {

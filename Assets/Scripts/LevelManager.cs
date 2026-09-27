@@ -31,7 +31,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private int twoStarMaxShots = 2;
 
     [Header("Bitiş zamanlaması")]
-    [Tooltip("Sonuç belli olduktan sonra bitiş ekranı açılmadan önceki bekleme (saniye) — son tuğlanın düşüşü ve juice görülsün.")]
+    [Tooltip("Sonuç belli olduktan sonra bitiş ekranı açılmadan önceki bekleme (saniye) — son tuğlanın düşüşü ve efektler görülsün.")]
     [SerializeField] private float endScreenDelay = 0.8f;
 
     [Header("Son mermi sonrası bekleme")]

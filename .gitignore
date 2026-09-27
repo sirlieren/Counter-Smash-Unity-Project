@@ -20,6 +20,16 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# Local AI-assistant context (not part of the public project)
+/AGENTS.md
+/CLAUDE.md
+
+# Unity Asset Store source files are licensed per user and kept locally.
+/Assets/JMO Assets/
+
+# Unity/IDE-generated solution files
+*.slnx
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be committed to version control.
 *.blend1
 *.blend1.meta
