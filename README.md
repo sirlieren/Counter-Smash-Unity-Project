@@ -8,24 +8,18 @@ A mobile physics game built with Unity 6. Aim at toy-brick structures, time your
 
 ## Gameplay Video
 
-<!-- After uploading the video to YouTube, replace YOUTUBE_VIDEO_ID below with its video ID:
-[![Watch Counter Smash gameplay](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID)
--->
+[![Watch Counter Smash gameplay](Assets/Screenshots/ss2.png)](https://www.youtube.com/shorts/d7HCrYggvNI)
 
-*Gameplay video coming soon.*
+Click the preview to watch the gameplay short on YouTube.
 
 ## Screenshots
 
-<!-- Add captured gameplay screenshots under Documentation/Images, then uncomment and update these lines:
 <p align="center">
-  <img src="Documentation/Images/gameplay-01.png" width="32%" alt="A generated brick structure ready to play">
-  <img src="Documentation/Images/gameplay-02.png" width="32%" alt="The charge meter approaching a perfect shot">
-  <img src="Documentation/Images/gameplay-03.png" width="32%" alt="A perfect shot scattering toy bricks">
+  <img src="Assets/Screenshots/ss1.png" width="24%" alt="Toy-brick targets and remaining shots during gameplay">
+  <img src="Assets/Screenshots/ss2.png" width="24%" alt="A perfect shot triggering an explosive hit">
+  <img src="Assets/Screenshots/ss3.png" width="24%" alt="Aiming at the remaining toy bricks">
+  <img src="Assets/Screenshots/ss4.png" width="24%" alt="Level clear screen showing the earned stars">
 </p>
--->
-
-*Screenshots coming soon.*
-
 ## The Core Feel
 
 Hold anywhere on the screen to charge, then release to fire. The charge meter loops: it fills, reaches its peak, drops back to zero, and starts again. Its output follows a tuned ease-out curve rather than a linear fill, giving the player more readable control near the high-power end while keeping the perfect shot demanding.
